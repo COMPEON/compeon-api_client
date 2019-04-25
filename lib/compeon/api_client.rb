@@ -2,7 +2,7 @@
 
 require 'compeon/api_client/version'
 
-require 'faraday/middleware'
+require 'faraday_middleware'
 
 module Compeon
   class APIClient
@@ -14,18 +14,28 @@ module Compeon
                        end
     end
 
+    def get(*path_segments)
+      connection.get(path(path_segments))
+    end
+
     private
 
     attr_reader :version
 
+    def path(*path_segments)
+      ["/v#{version}", *path_segments].join('/')
+    end
+
     def connection
       @connection ||= Faraday.new(url: ENV['COMPEON_API_URL']) do |connection|
-        connection.adapter Faraday.default_adapter
         connection.headers['Content-Type'] = 'application/json'
-        connection.response :json
+        connection.request :json
+        connection.response :jsonapi
+        connection.response :raise_error
+        connection.adapter Faraday.default_adapter
       end
 
-      @connection.headers['Authorization'] = "token #{token_manager.token}" if token_manager
+      @connection.headers['Authorization'] = "token #{@token_manager.token}" if @token_manager
       @connection
     end
 
@@ -35,6 +45,32 @@ module Compeon
       end
 
       attr_reader :token
+    end
+
+    module DeepHashTransformer
+      refine Hash do
+        def deep_transform_keys(object = self, &block)
+          case object
+          when Hash
+            object.each_with_object({}) do |(key, value), result|
+              result[yield(key)] = deep_transform_keys(value, &block)
+            end
+          when Array
+            object.map { |e| deep_transform_keys(e, &block) }
+          else
+            object
+          end
+        end
+      end
+    end
+
+    class JSONAPIMiddleware < Faraday::Response::Middleware
+      using DeepHashTransformer
+      Faraday::Response.register_middleware jsonapi: self
+
+      def parse(body)
+        JSON.load(body).deep_transform_keys { |key| key.tr('-', '_').to_sym }
+      end
     end
   end
 end
