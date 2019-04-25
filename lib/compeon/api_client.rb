@@ -48,8 +48,8 @@ module Compeon
     end
 
     module DeepHashTransformer
-      refine Hash do
-        def deep_transform_keys(object = self, &block)
+      class << self
+        def deep_transform_keys(object, &block)
           case object
           when Hash
             object.each_with_object({}) do |(key, value), result|
@@ -65,11 +65,14 @@ module Compeon
     end
 
     class JSONAPIMiddleware < Faraday::Response::Middleware
-      using DeepHashTransformer
       Faraday::Response.register_middleware jsonapi: self
 
-      def parse(body)
-        JSON.load(body).deep_transform_keys { |key| key.tr('-', '_').to_sym }
+      def parse(json_body)
+        hash_body = JSON.load(json_body)
+
+        DeepHashTransformer.deep_transform_keys(hash_body) do |key|
+          key.tr('-', '_').to_sym
+        end
       end
     end
   end
