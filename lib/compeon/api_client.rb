@@ -36,11 +36,14 @@ module Compeon
     end
 
     def connection
-      @connection ||= Faraday.new(url: ENV['COMPEON_API_URL']) do |connection|
+      @connection ||= Faraday.new(url: url) do |connection|
         connection.headers['Content-Type'] = 'application/json'
-        connection.request :json
-        connection.response :jsonapi
+        connection.request :jsonapi_request
+
+        connection.response :jsonapi_response
         connection.response :raise_error
+        connection.response :logger
+
         connection.adapter Faraday.default_adapter
       end
 
@@ -73,8 +76,23 @@ module Compeon
       end
     end
 
-    class JSONAPIMiddleware < Faraday::Response::Middleware
-      Faraday::Response.register_middleware jsonapi: self
+    class JSONAPIRequestMiddleware < Faraday::Response::Middleware
+      Faraday::Request.register_middleware jsonapi_request: self
+
+      def call(env)
+        if env.body
+          body = DeepHashTransformer.deep_transform_keys(env.body) do |key|
+            key.to_s.tr('_', '-')
+          end
+
+          env.body = JSON.pretty_generate(body)
+        end
+        @app.call(env)
+      end
+    end
+
+    class JSONAPIResponseMiddleware < Faraday::Response::Middleware
+      Faraday::Response.register_middleware jsonapi_response: self
 
       def parse(json_body)
         hash_body = JSON.load(json_body)
