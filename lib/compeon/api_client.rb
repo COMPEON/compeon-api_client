@@ -19,6 +19,14 @@ module Compeon
       connection.get(path(path_segments))
     end
 
+    def post(*path_segments, **payload)
+      connection.post(path(path_segments), **payload)
+    end
+
+    def put(*path_segments, **payload)
+      connection.put(path(path_segments), **payload)
+    end
+
     private
 
     attr_reader :url, :version
