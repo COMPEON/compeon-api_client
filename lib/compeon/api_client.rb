@@ -4,6 +4,9 @@ require 'compeon/api_client/version'
 
 require 'faraday_middleware'
 
+require 'compeon/api_client/middlewares/jsonapi_request'
+require 'compeon/api_client/middlewares/jsonapi_response'
+
 module Compeon
   class APIClient
     def initialize(version:, token: nil, url: ENV['COMPEON_API_URL'])
@@ -39,7 +42,7 @@ module Compeon
 
     def connection
       @connection ||= Faraday.new(url: url) do |connection|
-        connection.headers['Content-Type'] = 'application/json'
+        connection.headers['Content-Type'] = 'application/vnd.api+json'
         connection.request :jsonapi_request
 
         connection.response :jsonapi_response
@@ -51,58 +54,6 @@ module Compeon
 
       @connection.headers['Authorization'] = "token #{@token_manager.token}" if @token_manager
       @connection
-    end
-
-    class StaticTokenManager
-      def initialize(token)
-        @token = token
-      end
-
-      attr_reader :token
-    end
-
-    module DeepHashTransformer
-      class << self
-        def deep_transform_keys(object, &block)
-          case object
-          when Hash
-            object.each_with_object({}) do |(key, value), result|
-              result[yield(key)] = deep_transform_keys(value, &block)
-            end
-          when Array
-            object.map { |e| deep_transform_keys(e, &block) }
-          else
-            object
-          end
-        end
-      end
-    end
-
-    class JSONAPIRequestMiddleware < Faraday::Response::Middleware
-      Faraday::Request.register_middleware jsonapi_request: self
-
-      def call(env)
-        if env.body
-          body = DeepHashTransformer.deep_transform_keys(env.body) do |key|
-            key.to_s.tr('_', '-')
-          end
-
-          env.body = JSON.pretty_generate(body)
-        end
-        @app.call(env)
-      end
-    end
-
-    class JSONAPIResponseMiddleware < Faraday::Response::Middleware
-      Faraday::Response.register_middleware jsonapi_response: self
-
-      def parse(json_body)
-        hash_body = JSON.load(json_body)
-
-        DeepHashTransformer.deep_transform_keys(hash_body) do |key|
-          key.tr('-', '_').to_sym
-        end
-      end
     end
   end
 end
