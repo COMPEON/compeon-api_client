@@ -7,7 +7,7 @@ require 'faraday_middleware'
 module Compeon
   class APIClient
     def initialize(version:, token: nil, url: ENV['COMPEON_API_URL'])
-      @url = url
+      @url = "#{url}/v#{version}"
       @version = version
       @token_manager = case token
                        when String then StaticTokenManager.new(token)
@@ -32,7 +32,7 @@ module Compeon
     attr_reader :url, :version
 
     def path(*path_segments)
-      ["/v#{version}", *path_segments].join('/')
+      [*path_segments].join('/')
     end
 
     def connection
