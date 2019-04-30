@@ -31,8 +31,10 @@ module Compeon
 
     attr_reader :url, :version
 
-    def path(*path_segments)
-      [*path_segments].join('/')
+    def path(path_segments)
+      path_segments
+        .map { |path_segment| path_segment.to_s.tr('_', '-') }
+        .join('/')
     end
 
     def connection
