@@ -18,7 +18,7 @@ module Compeon
               key.to_s.tr('_', '-')
             end
 
-            env.body = JSON.pretty_generate(body)
+            env.body = JSON.dump(body)
           end
           @app.call(env)
         end
