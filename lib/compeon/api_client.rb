@@ -6,6 +6,7 @@ require 'faraday_middleware'
 
 require 'compeon/api_client/middlewares/jsonapi_request'
 require 'compeon/api_client/middlewares/jsonapi_response'
+require 'compeon/api_client/static_token_manager'
 
 module Compeon
   class APIClient
