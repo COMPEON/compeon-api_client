@@ -23,6 +23,10 @@ module Compeon
       connection.get(path(path_segments))
     end
 
+    def patch(*path_segments, **payload)
+      connection.patch(path(path_segments), **payload)
+    end
+
     def post(*path_segments, **payload)
       connection.post(path(path_segments), **payload)
     end
