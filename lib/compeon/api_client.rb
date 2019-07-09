@@ -40,9 +40,10 @@ module Compeon
     attr_reader :url, :version
 
     def path(path_segments)
-      path_segments
-        .map { |path_segment| path_segment.to_s.tr('_', '-') }
-        .join('/')
+      path_segments.map do |path_segment|
+        actual_segment, query = path_segment.to_s.split('?')
+        [actual_segment.tr('_', '-'), query].join('?')
+      end.join('/')
     end
 
     def connection
