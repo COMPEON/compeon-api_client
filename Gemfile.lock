@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    compeon-api_client (0.1.0)
+    compeon-api_client (0.2.0)
       faraday
       faraday_middleware
 
