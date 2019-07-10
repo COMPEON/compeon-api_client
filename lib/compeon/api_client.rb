@@ -19,30 +19,32 @@ module Compeon
                        end
     end
 
-    def get(*path_segments)
-      connection.get(path(path_segments))
+    def get(*path_segments, query: nil)
+      connection.get(path(path_segments, query))
     end
 
-    def patch(*path_segments, **payload)
-      connection.patch(path(path_segments), **payload)
+    def patch(*path_segments, query: nil, **payload)
+      connection.patch(path(path_segments, query), **payload)
     end
 
-    def post(*path_segments, **payload)
-      connection.post(path(path_segments), **payload)
+    def post(*path_segments, query: nil, **payload)
+      connection.post(path(path_segments, query), **payload)
     end
 
-    def put(*path_segments, **payload)
-      connection.put(path(path_segments), **payload)
+    def put(*path_segments, query: nil, **payload)
+      connection.put(path(path_segments, query), **payload)
     end
 
     private
 
     attr_reader :url, :version
 
-    def path(path_segments)
-      path_segments
-        .map { |path_segment| path_segment.to_s.tr('_', '-') }
-        .join('/')
+    def path(path_segments, query)
+      sanitized_path = path_segments
+                       .map { |path_segment| path_segment.to_s.tr('_', '-') }
+                       .join('/')
+
+      [sanitized_path, query].join('?')
     end
 
     def connection
