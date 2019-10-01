@@ -1,0 +1,41 @@
+name: CI
+on: push
+jobs:
+  Ruby_2_6:
+    runs-on: ubuntu-latest
+    container: ruby:2.6
+    name: Ruby 2.6
+    steps:
+      - uses: actions/checkout@master
+      - run: gem install bundle
+      - run: bundle
+      - run: bundle exec rake
+
+  Ruby_2_5:
+    runs-on: ubuntu-latest
+    container: ruby:2.5
+    name: Ruby 2.5
+    steps:
+      - uses: actions/checkout@master
+      - run: gem install bundle
+      - run: bundle
+      - run: bundle exec rake
+
+  Lambda_Ruby_2_5:
+    runs-on: ubuntu-latest
+    container: lambci/lambda:build-ruby2.5
+    name: Lambda Ruby 2.5
+    steps:
+      - uses: actions/checkout@master
+      - run: gem install bundle
+      - run: bundle
+      - run: bundle exec rake
+
+  All:
+    runs-on: ubuntu-latest
+    needs:
+      - Ruby_2_6
+      - Ruby_2_5
+      - Lambda_Ruby_2_5
+    steps:
+      - run: echo ok
