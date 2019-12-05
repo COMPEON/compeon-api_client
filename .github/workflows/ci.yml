@@ -6,7 +6,7 @@ jobs:
     container: ruby:2.6
     name: Ruby 2.6
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v1
       - run: gem install bundle
       - run: bundle
       - run: bundle exec rake
@@ -16,7 +16,7 @@ jobs:
     container: ruby:2.5
     name: Ruby 2.5
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v1
       - run: gem install bundle
       - run: bundle
       - run: bundle exec rake
@@ -26,7 +26,7 @@ jobs:
     container: lambci/lambda:build-ruby2.5
     name: Lambda Ruby 2.5
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v1
       - run: gem install bundle
       - run: bundle
       - run: bundle exec rake
