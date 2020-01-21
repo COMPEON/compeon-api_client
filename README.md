@@ -1,4 +1,4 @@
-# Compeon::ApplicationTokenManager
+# Compeon::ApiClient
 
 ## Release
 
