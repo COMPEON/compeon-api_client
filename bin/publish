@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+bundle > /dev/null # ensure that Gemfile.lock is up to date
+
+if [[ ! -z $(git status --porcelain) ]]
+then
+  echo "Please commit your changes or stash them before publishing!"
+  exit 1
+fi
+
+mkdir -p pkg
+rm -f pkg/*
+
+rake build
+
+VERSION=$(gem specification pkg/* | ruby -r yaml -e 'puts YAML.load(STDIN).version')
+
+gem push --key github --host https://rubygems.pkg.github.com/COMPEON pkg/*.gem
+
+git tag v$VERSION
+git push origin v$VERSION

@@ -1,5 +1,9 @@
 name: CI
-on: push
+
+on:
+  push:
+    branches: '*'
+
 jobs:
   Ruby_2_6:
     runs-on: ubuntu-latest
