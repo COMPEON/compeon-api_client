@@ -40,9 +40,8 @@ module Compeon
     attr_reader :url, :version
 
     def path(path_segments, query)
-      sanitized_path = path_segments
-                       .map { |path_segment| path_segment.to_s.tr('_', '-') }
-                       .join('/')
+      sanitized_path = path_segments.join('/')
+                                    .tr('_', '-')
 
       [sanitized_path, query].join('?')
     end
